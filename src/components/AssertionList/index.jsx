@@ -23,15 +23,11 @@ class AssertionList extends Component {
           assertions.map((assertion, index) => {
             return (
               <AssertionRow
-                key={
-                  assertion.author +
-                  assertion.bid +
-                  assertion.metadata +
-                  assertion.verdict +
-                  index
-                }
+                key={assertion.author + assertion.bid + assertion.metadata + assertion.verdict + index}
                 assertion={assertion}
                 artifacts={artifacts}
+                revealed={bounty.revealed}
+                expired={bounty.expired}
               />
             );
           })}

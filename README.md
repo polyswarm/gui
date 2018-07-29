@@ -50,6 +50,8 @@ Every time you open the application you will have to choose the keyfile & enter 
 
 **To find your key file, it is in a folder called `keystore` under the geth data dir. On Linux, the Mainnet keyfiles can be found in `$HOME/.ethereum/keystore`**
 
+Your keys must be stored in a directory called `keystore`, but the directory can be placed in the location of your choosing.
+
 # Bounty & Offer List
 
 <img style='width: 100%;' src='./docs/img/main_screen.png'>
@@ -141,4 +143,4 @@ Posting a bounty requires at minimum 1/16 NCT as the reward. The contract adds a
 
 # Relay Cost
 
-Withdrawals from the relay cost gas for the confirmations posted & transferring ETH. To recuperate this cost, the relay charges some NCT for withdrawals. 
+Withdrawals from the relay cost gas for the confirmations posted & transferring ETH. To recuperate this cost, the relay charges some NCT for withdrawals.

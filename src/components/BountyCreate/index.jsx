@@ -73,11 +73,7 @@ class BountyCreate extends Component {
                 <Button flat cancel disabled={!next} onClick={this.onBackClick}>
                   {strings.back}
                 </Button>
-                <Button
-                  flat
-                  disabled={next || !files || files.length == 0}
-                  onClick={this.onNextClick}
-                >
+                <Button flat disabled={next || !files || files.length == 0} onClick={this.onNextClick}>
                   {strings.next}
                 </Button>
               </div>
@@ -102,16 +98,8 @@ class BountyCreate extends Component {
                 </form>
                 <div className="Bounty-Create-Upload">
                   <Button
-                    disabled={
-                      !reward ||
-                      !duration ||
-                      reward_error ||
-                      duration_error ||
-                      !files ||
-                      files.length == 0
-                    }
-                    onClick={this.onClickHandler}
-                  >
+                    disabled={!reward || !duration || reward_error || duration_error || !files || files.length == 0}
+                    onClick={this.onClickHandler}>
                     {`Create ${files.length} file bounty`}
                   </Button>
                 </div>
@@ -121,11 +109,7 @@ class BountyCreate extends Component {
               <div className="Bounty-Files">
                 <div className="Bounty-Button" />
                 <DropTarget onFilesSelected={this.onMultipleFilesSelected} />
-                <FileList
-                  files={files}
-                  clear={this.onClearAll}
-                  removeFile={this.onFileRemoved}
-                />
+                <FileList files={files} clear={this.onClearAll} removeFile={this.onFileRemoved} />
               </div>
             )}
           </div>
@@ -188,13 +172,11 @@ class BountyCreate extends Component {
   createBounty() {
     const {
       state: { reward, duration },
-      props: { address, addBounty }
+      props: { address, encryptionKey, addBounty }
     } = this;
     const files = this.state.files.slice();
 
-    const rewardWei = new BigNumber(reward).times(
-      new BigNumber('1000000000000000000')
-    );
+    const rewardWei = new BigNumber(reward).times(new BigNumber('1000000000000000000'));
 
     const http = this.http;
     if (files && files.length > 0) {
@@ -206,14 +188,7 @@ class BountyCreate extends Component {
         resolve();
       })
         .then(() => http.uploadFiles(files))
-        .then(artifact =>
-          http.uploadBounty(
-            address,
-            rewardWei.toString(),
-            artifact,
-            Number(duration)
-          )
-        )
+        .then(artifact => http.uploadBounty(address, rewardWei.toString(), artifact, Number(duration), encryptionKey))
         .then(result => {
           if (addBounty) {
             addBounty(result);

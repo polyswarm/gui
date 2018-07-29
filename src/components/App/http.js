@@ -2,7 +2,6 @@ import BigNumber from 'bignumber.js';
 import validator from 'validator';
 import web3Utils from 'web3-utils';
 import multihashes from 'multihashes';
-import EthereumTx from 'ethereumjs-tx';
 import etherutils from 'ethereumjs-util';
 import keythereum from 'keythereum';
 import WebSocket from 'ws';
@@ -47,12 +46,7 @@ class HttpApp {
         () =>
           new Promise((resolve, reject) => {
             const path = require('path');
-            if (
-              !keyfile ||
-              !address ||
-              !web3Utils.isAddress(address) ||
-              !password
-            ) {
+            if (!keyfile || !address || !web3Utils.isAddress(address) || !password) {
               reject();
             }
             // We double up on the dirname to trim keystore, which importfromfile adds
@@ -87,17 +81,13 @@ class HttpApp {
       .then(json => json.result)
       .then(bounty => this.getBountyIsActive(chain, bounty))
       .then(bounty => {
-        const amount = new BigNumber(bounty.amount)
-          .dividedBy(new BigNumber('1000000000000000000'))
-          .toNumber();
+        const amount = new BigNumber(bounty.amount).dividedBy(new BigNumber('1000000000000000000')).toNumber();
         bounty.amount = amount;
         bounty.type = 'bounty';
         return bounty;
       })
       .then(bounty => this.getAssertionsForBounty(chain, bounty))
-      .then(bountyAssertions =>
-        this.getArtifactsForBounty(chain, bountyAssertions)
-      )
+      .then(bountyAssertions => this.getArtifactsForBounty(chain, bountyAssertions))
       .catch(() => null);
   }
 
@@ -210,9 +200,7 @@ class HttpApp {
         reject('Invalid GUID');
       }
     })
-      .then(guid =>
-        fetch(url + '/bounties/' + guid + '/assertions' + '?chain=' + chain)
-      )
+      .then(guid => fetch(url + '/bounties/' + guid + '/assertions' + '?chain=' + chain))
       .then(response => {
         if (response.ok) {
           return response;
@@ -224,9 +212,7 @@ class HttpApp {
       .then(json => json.result)
       .then(assertions => {
         return assertions.map(assertion => {
-          const bid = new BigNumber(assertion.bid)
-            .dividedBy(new BigNumber('1000000000000000000'))
-            .toNumber();
+          const bid = new BigNumber(assertion.bid).dividedBy(new BigNumber('1000000000000000000')).toNumber();
           return {
             author: assertion.author,
             bid: bid,
@@ -270,9 +256,7 @@ class HttpApp {
         reject(`${wallet} is not an Ethereum address`);
       }
     })
-      .then(address =>
-        fetch(url + '/balances/' + address + '/eth?chain=' + chain)
-      )
+      .then(address => fetch(url + '/balances/' + address + '/eth?chain=' + chain))
       .then(response => {
         if (response.ok) {
           return response;
@@ -294,9 +278,7 @@ class HttpApp {
         reject(`${wallet} is not an Ethereum address`);
       }
     })
-      .then(address =>
-        fetch(url + '/balances/' + address + '/nct?chain=' + chain)
-      )
+      .then(address => fetch(url + '/balances/' + address + '/nct?chain=' + chain))
       .then(response => {
         if (response.ok) {
           return response;
@@ -306,27 +288,6 @@ class HttpApp {
       .then(response => response.json())
       .then(json => json.result + '')
       .catch(() => 0);
-  }
-
-  listenForTransactions(key) {
-    const ws = this.ws;
-    const websocket = new WebSocket(ws + '/transactions');
-
-    websocket.onmessage = msg => {
-      const { id, data } = JSON.parse(msg.data);
-      const { chainId } = data;
-      const tx = new EthereumTx(data);
-      tx.sign(key);
-
-      websocket.send(
-        JSON.stringify({
-          id: id,
-          chainId: chainId,
-          data: tx.serialize().toString('hex')
-        })
-      );
-    };
-    this.transactions = websocket;
   }
 
   listenForMessages(offer, onMessageReceived) {
@@ -365,15 +326,10 @@ class HttpApp {
 
         const { from_socket: websocket, state, v, r, s } = data;
 
-        let hash =
-          '0x' + etherutils.keccak(etherutils.toBuffer(state)).toString('hex');
+        let hash = '0x' + etherutils.keccak(etherutils.toBuffer(state)).toString('hex');
         hash = etherutils.hashPersonalMessage(etherutils.toBuffer(hash));
 
-        let address =
-          '0x' +
-          etherutils
-            .pubToAddress(etherutils.ecrecover(hash, v, r, s))
-            .toString('hex');
+        let address = '0x' + etherutils.pubToAddress(etherutils.ecrecover(hash, v, r, s)).toString('hex');
         address = web3Utils.toChecksumAddress(address);
 
         if (address !== expert) {
@@ -387,26 +343,17 @@ class HttpApp {
         if (bufferState.length < 558) {
           return;
         }
-        const sequence = bufferState
-          .slice(32, 64)
-          .reduce((accumulator, current) => {
-            return (accumulator << 32) + current;
-          });
-        const artifact = String.fromCharCode.apply(
-          String,
-          bufferState.slice(352, 398)
-        );
+        const sequence = bufferState.slice(32, 64).reduce((accumulator, current) => {
+          return (accumulator << 32) + current;
+        });
+        const artifact = String.fromCharCode.apply(String, bufferState.slice(352, 398));
         //14 higher for extra length in URI.
         const verdicts = bufferState.slice(494, 526);
 
-        const metadata = String.fromCharCode.apply(
-          String,
-          bufferState.slice(526, 558)
-        );
+        const metadata = String.fromCharCode.apply(String, bufferState.slice(526, 558));
         metadata.replace('\0', '');
 
-        const artifactLength =
-          artifact.split('').filter(letter => letter !== '\0').length > 0;
+        const artifactLength = artifact.split('').filter(letter => letter !== '\0').length > 0;
 
         if (artifactLength) {
           const url = this.url;
@@ -478,21 +425,19 @@ class HttpApp {
     });
   }
 
-  listenForAssertions(assertionAddedCallback) {
+  listenForAssertions(assertionAddedCallback, assertionRevealedCallback) {
     // attach to websocket
     // anytime we get an assertion, check if it matches a guid
     // if it does, add it to the assertions for that object
     const ws = this.ws;
-    const websocket = new WebSocket(ws + '/events/home');
+    const websocket = new WebSocket(ws + '/events');
 
     websocket.onmessage = event => {
       const message = JSON.parse(event.data);
 
       if (message.event === 'assertion') {
         const body = message.data;
-        const bid = new BigNumber(body.bid)
-          .dividedBy(new BigNumber('1000000000000000000'))
-          .toNumber();
+        const bid = new BigNumber(body.bid).dividedBy(new BigNumber('1000000000000000000')).toNumber();
         const assertion = {
           guid: body.bounty_guid,
           bid: bid,
@@ -501,6 +446,11 @@ class HttpApp {
           author: body.author
         };
         assertionAddedCallback(assertion);
+      }
+
+      if (message.event === 'reveal') {
+        const guid = message.data.bounty_guid;
+        assertionRevealedCallback(guid);
       }
     };
   }

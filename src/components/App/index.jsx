@@ -64,6 +64,7 @@ class App extends Component {
     this.getData = this.getData.bind(this);
     this.getWallet = this.getWallet.bind(this);
     this.updateOnAssertion = this.updateOnAssertion.bind(this);
+    this.updateOnReveal = this.updateOnReveal.bind(this);
     this.onModalRequestClose = this.onModalRequestClose.bind(this);
   }
 
@@ -72,8 +73,7 @@ class App extends Component {
       state: { bounties }
     } = this;
     const { bounties: prevBounties } = prevState;
-    const storageOutOfSync =
-      JSON.stringify(bounties) !== JSON.stringify(prevBounties);
+    const storageOutOfSync = JSON.stringify(bounties) !== JSON.stringify(prevBounties);
     if (storageOutOfSync) {
       this.storeBounties(bounties);
     }
@@ -102,27 +102,12 @@ class App extends Component {
 
   render() {
     const {
-      state: {
-        active,
-        bounties,
-        createBounty,
-        createOffer,
-        first,
-        errorMessage,
-        relay,
-        modalOpen
-      }
+      state: { active, bounties, createBounty, createOffer, first, errorMessage, relay, modalOpen }
     } = this;
 
     return (
       <div className="App">
-        <CSSTransition
-          in={first}
-          timeout={200}
-          mountonEnter
-          unmountOnExit
-          classNames="fade"
-        >
+        <CSSTransition in={first} timeout={200} mountonEnter unmountOnExit classNames="fade">
           {() => <Welcome onClick={this.onCloseWelcome} />}
         </CSSTransition>
         {!first && (
@@ -160,10 +145,7 @@ class App extends Component {
             {!createBounty &&
               active >= 0 &&
               bounties[active].type === 'bounty' && (
-                <BountyInfo
-                  {...this.getPropsForChild()}
-                  bounty={bounties[active]}
-                />
+                <BountyInfo {...this.getPropsForChild()} bounty={bounties[active]} />
               )}
             {!createOffer &&
               active >= 0 &&
@@ -176,12 +158,7 @@ class App extends Component {
                 />
               )}
             {errorMessage &&
-              errorMessage.length > 0 && (
-                <Snackbar
-                  message={errorMessage}
-                  onDismiss={this.onErrorDismissed}
-                />
-              )}
+              errorMessage.length > 0 && <Snackbar message={errorMessage} onDismiss={this.onErrorDismissed} />}
           </React.Fragment>
         )}
       </div>
@@ -211,9 +188,7 @@ class App extends Component {
   onAddMessage(guid, message) {
     // deep copy so we it won't edit the actual state
     const bounties = JSON.parse(JSON.stringify(this.state.bounties.slice()));
-    const offers = bounties.filter(
-      value => value.type === 'offer' && value.guid === guid
-    );
+    const offers = bounties.filter(value => value.type === 'offer' && value.guid === guid);
     if (offers && offers.length == 1) {
       // Allow expert to replace the URI he listens to.
       const websocket = message.websocket;
@@ -291,7 +266,6 @@ class App extends Component {
       .setAccount(address, keyfile, password)
       .then(key => {
         this.setState({ key: key });
-        this.http.listenForTransactions(key);
       })
       .then(() => this.getWallet())
       .catch(() => {});
@@ -407,11 +381,21 @@ class App extends Component {
     this.setState({ bounties: bounties });
   }
 
+  updateOnReveal(guid) {
+    const bounties = this.state.bounties.slice();
+    const index = bounties.findIndex(bounty => bounty.guid === guid);
+    if (index >= 0) {
+      const bounty = bounties[index];
+      bounty.revealed = true;
+    }
+    this.setState({ bounties: bounties });
+  }
+
   getData() {
     const http = this.http;
     const uuid = Uuid();
     this.addRequest(strings.requestAllData, uuid);
-    http.listenForAssertions(this.updateOnAssertion);
+    http.listenForAssertions(this.updateOnAssertion, this.updateOnReveal);
 
     const bounties = this.state.bounties.slice();
     const promises = bounties.map(bounty => {
@@ -438,9 +422,7 @@ class App extends Component {
         // get updated state after download finishes
         const bounties = this.state.bounties.slice();
         values.forEach(value => {
-          const foundIndex = bounties.findIndex(
-            bounty => bounty.guid === value.guid
-          );
+          const foundIndex = bounties.findIndex(bounty => bounty.guid === value.guid);
           if (foundIndex >= 0) {
             if (value.type === 'bounty') {
               bounties[foundIndex] = value;
@@ -491,18 +473,14 @@ class App extends Component {
     const eth = chains.map(chain =>
       http
         .getEth(chain)
-        .then(balance =>
-          new BigNumber(balance).dividedBy(new BigNumber(1000000000000000000))
-        )
+        .then(balance => new BigNumber(balance).dividedBy(new BigNumber(1000000000000000000)))
         .then(b => `${b.toNumber()}`)
     );
 
     const nct = chains.map(chain =>
       http
         .getNct(chain)
-        .then(balance =>
-          new BigNumber(balance).dividedBy(new BigNumber(1000000000000000000))
-        )
+        .then(balance => new BigNumber(balance).dividedBy(new BigNumber(1000000000000000000)))
         .then(b => `${b.toNumber()}`)
     );
 
@@ -526,10 +504,7 @@ class App extends Component {
             }
           })
       )
-      .then(
-        wallet =>
-          new Promise(resolve => this.setState({ wallet: wallet }, resolve))
-      )
+      .then(wallet => new Promise(resolve => this.setState({ wallet: wallet }, resolve)))
       .catch(() => {});
   }
 
