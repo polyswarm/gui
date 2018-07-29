@@ -1,5 +1,6 @@
 import multihashes from 'multihashes';
 import web3Utils from 'web3-utils';
+import EthereumTx from 'ethereumjs-tx';
 
 class Http {
   constructor(url) {
@@ -26,9 +27,7 @@ class Http {
 
         // attach listeners
         xhr.onerror = () => {
-          throw Error(
-            'Check that IPFS is running and you have an active internet connection.'
-          );
+          throw Error('Check that IPFS is running and you have an active internet connection.');
         };
         xhr.onload = () => {
           resolve(xhr.response);
@@ -47,14 +46,12 @@ class Http {
         if (json.result) {
           return json.result;
         } else {
-          throw Error(
-            'Check that IPFS is running and you have an active internet connection.'
-          );
+          throw Error('Check that IPFS is running and you have an active internet connection.');
         }
       });
   }
 
-  uploadBounty(address, amount, artifactUri, duration) {
+  uploadBounty(address, amount, artifactUri, duration, encryptionKey) {
     const url = this.url + '/bounties' + this.getUrlAccount(address);
     return new Promise((resolve, reject) => {
       const hash = multihashes.fromB58String(artifactUri);
@@ -106,7 +103,38 @@ class Http {
         });
       })
       .then(response => response.json())
-      .then(body => body.result);
+      .then(body => {
+        return new Promise(resolve => {
+          const url = this.url + '/transactions';
+          const data = body.result;
+          const transactions = data.transactions;
+          const transactionArr = [];
+
+          transactions.forEach(transaction => {
+            const tx = new EthereumTx(transaction);
+            tx.sign(encryptionKey);
+            const serializedTx = tx.serialize();
+            transactionArr.push(serializedTx.toString('hex'));
+          });
+
+          const signedTransactions = JSON.stringify({ transactions: transactionArr });
+
+          fetch(url, {
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            method: 'post',
+            body: signedTransactions
+          })
+            .then(response => {
+              return response.json();
+            })
+            .then(data => {
+              const bounty = data.result.bounties[0];
+              resolve(bounty);
+            });
+        });
+      });
   }
 }
 export default Http;

@@ -262,7 +262,8 @@ it('calls uploadBounty when uploadFiles succeeds', done => {
         'author',
         '62500000000000000',
         ['demo', 'asdf'],
-        300
+        300,
+        undefined
       );
       expect(mockUploadBounty).toHaveBeenCalledTimes(1);
       done();

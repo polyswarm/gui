@@ -192,18 +192,13 @@ exports[`renders without crashing 1`] = `
             
           </div>
           <input
-            class="AnimatedInput-Input AnimatedInput-Error"
+            class="AnimatedInput-Input"
             id="nectar"
             type="number"
             value=""
           >
             
           </input>
-          <p
-            class="AnimatedInput-ErrorLabel"
-          >
-            This feature is disabled until the PolySwarm Sidechain goes live very soon.
-          </p>
         </div>
       </div>
       <div
