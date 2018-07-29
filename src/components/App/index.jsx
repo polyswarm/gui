@@ -381,12 +381,15 @@ class App extends Component {
     this.setState({ bounties: bounties });
   }
 
-  updateOnReveal(guid) {
-    const bounties = this.state.bounties.slice();
+  updateOnReveal(reveal) {
+    const guid = reveal.guid;
+    const bounties = JSON.parse(JSON.stringify(this.state.bounties.slice()));
     const index = bounties.findIndex(bounty => bounty.guid === guid);
     if (index >= 0) {
       const bounty = bounties[index];
-      bounty.revealed = true;
+      const assertion = bounty.assertions[reveal.index];
+      assertion.revealed = true;
+      assertion.verdicts = reveal.verdicts;
     }
     this.setState({ bounties: bounties });
   }

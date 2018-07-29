@@ -11,7 +11,7 @@ import strings from './strings';
 class AssertionRow extends Component {
   render() {
     const {
-      props: { assertion, artifacts, revealed, expired }
+      props: { assertion, artifacts, expired }
     } = this;
     const worstVerdict = assertion.verdicts.reduce((accumulator, verdict) => accumulator || verdict);
     const verdictClass = classNames({
@@ -32,12 +32,11 @@ class AssertionRow extends Component {
             <StatRow title={strings.metadata} content={assertion.metadata} />
             {artifacts.map((file, index) => {
               let verdict;
-              if (revealed === undefined && !expired) {
+              if (assertion.revealed === undefined && !expired) {
                 verdict = strings.unknown;
               } else {
                 verdict = assertion.verdicts[index] ? strings.bad : strings.good;
               }
-              console.log(assertion.verdicts);
               const filename = artifacts[index].name;
               return <StatRow key={filename} title={filename} content={verdict} />;
             })}
@@ -59,7 +58,6 @@ class AssertionRow extends Component {
 AssertionRow.proptypes = {
   assertion: PropTypes.object.isRequired,
   artifacts: PropTypes.array,
-  revealed: PropTypes.bool,
   expired: PropTypes.bool
 };
 export default AssertionRow;

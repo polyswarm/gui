@@ -449,8 +449,13 @@ class HttpApp {
       }
 
       if (message.event === 'reveal') {
-        const guid = message.data.bounty_guid;
-        assertionRevealedCallback(guid);
+        const body = message.data;
+        const reveal = {
+          guid: body.bounty_guid,
+          index: body.index,
+          verdicts: body.verdicts
+        };
+        assertionRevealedCallback(reveal);
       }
     };
   }
