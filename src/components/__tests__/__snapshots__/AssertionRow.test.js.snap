@@ -48,7 +48,7 @@ exports[`renders without crashing 1`] = `
           <p
             class="StatContent"
           >
-            Malicious
+            Unknown
           </p>
         </li>
       </ul>

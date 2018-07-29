@@ -227,11 +227,11 @@ it('lists pending if not resolved or expired', () => {
       .find('.StatContent')
       .at(6)
       .text()
-  ).toEqual('Pending…');
+  ).toEqual('Unknown');
   expect(
     wrapper
       .find('.StatContent')
       .at(7)
       .text()
-  ).toEqual('Pending…');
+  ).toEqual('Unknown');
 });

@@ -73,12 +73,13 @@ it('puts the metadata as a statrow', () => {
   ).toEqual('Some virus');
 });
 
-it("displays each file with it's verdict as a statrow", () => {
+it("displays each file with it's verdict as a statrow when revealed", () => {
   const assertion = {
     author: 'asdf',
     bid: 10,
     verdicts: [true, false],
-    metadata: 'Some virus'
+    metadata: 'Some virus',
+    revealed: true,
   };
   const artifacts = [{ name: 'evil_file' }, { name: 'good_file' }];
   const wrapper = mount(
@@ -109,6 +110,44 @@ it("displays each file with it's verdict as a statrow", () => {
       .at(2)
       .text()
   ).toEqual('Safe');
+});
+
+it('displays each file with unknown as a statrow when not revealed', () => {
+  const assertion = {
+    author: 'asdf',
+    bid: 10,
+    verdicts: [true, false],
+    metadata: 'Some virus'
+  };
+  const artifacts = [{ name: 'evil_file' }, { name: 'good_file' }];
+  const wrapper = mount(
+    <AssertionRow assertion={assertion} artifacts={artifacts} />
+  );
+
+  expect(
+    wrapper
+      .find('.StatTitle')
+      .at(1)
+      .text()
+  ).toEqual('evil_file');
+  expect(
+    wrapper
+      .find('.StatContent')
+      .at(1)
+      .text()
+  ).toEqual('Unknown');
+  expect(
+    wrapper
+      .find('.StatTitle')
+      .at(2)
+      .text()
+  ).toEqual('good_file');
+  expect(
+    wrapper
+      .find('.StatContent')
+      .at(2)
+      .text()
+  ).toEqual('Unknown');
 });
 
 it('assigns Assertion-Malignant when there is only one malicious verdict', () => {
