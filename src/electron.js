@@ -1,7 +1,5 @@
 import { app, BrowserWindow } from 'electron';
-import installExtension, {
-  REACT_DEVELOPER_TOOLS
-} from 'electron-devtools-installer';
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { enableLiveReload } from 'electron-compile';
 import { spawn } from 'child_process';
 import ps from 'ps-node';
@@ -22,6 +20,7 @@ if (isDevMode) enableLiveReload({ strategy: 'react-hmr' });
 const createWindow = async () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
+    nodeIntegration: false,
     show: false,
     width: 1400,
     height: 800,
@@ -107,17 +106,17 @@ const startBackend = platform => {
     let command;
     const args = [];
     switch (platform) {
-    case 'win32':
-      command = 'cmd';
-      args.push('/K');
-      args.push('polyswarmd.exe');
-      break;
-    case 'linux':
-      command = './polyswarmd';
-      break;
-    case 'darwin':
-    default:
-      throw Error(`Application does not support platform ${platform}`);
+      case 'win32':
+        command = 'cmd';
+        args.push('/K');
+        args.push('polyswarmd.exe');
+        break;
+      case 'linux':
+        command = './polyswarmd';
+        break;
+      case 'darwin':
+      default:
+        throw Error(`Application does not support platform ${platform}`);
     }
 
     const daemon = spawn(command, args, spawnOptions);
