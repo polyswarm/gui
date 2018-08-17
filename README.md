@@ -1,3 +1,10 @@
+# Pre-Stable Software Security Warning
+
+This is pre-stable software.
+Swarm Technologies, Inc strongly discourages trusting this software with access to nontrivial amounts of cryptocurrency.
+This software comes with absoltely no warranty (See LICENSE.md).
+Usage of this software is at your own risk.
+
 # PolySwarm Gui
 
 This gui is used to post Bounties, and Offer Channels to the PolySwarm marketplace running on Ethereum.
